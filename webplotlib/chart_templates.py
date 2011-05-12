@@ -96,6 +96,17 @@ def create_timeseries_figure(ts_data_dct, labels_dct, template,
         ax.set_ylabel(labels_dct['y'])
     else:
         ax.set_ylabel('Data')
+    # With content of the figure settled, stylize it with mutator
+    # function:
+    stylize_figure(the_figure)
+    return FigureCanvas(the_figure)
+
+
+def stylize_figure(the_figure, style_template=None):
+    """
+    A mutator that updates the appearance of the given Figure
+    instance, per style_template.
+    """
     # PRESENTATION of figure:
     #
     # The template parameter should/will set the overall styling of
@@ -106,33 +117,44 @@ def create_timeseries_figure(ts_data_dct, labels_dct, template,
     axis_ticks_color = '#555555'
     # Change the overall background color, which is grey by default:
     the_figure.patch.set_color(bgcolor)
-    # Changing the border of a matplotlib chart is clumsy, but here it
-    # is per http://stackoverflow.com/q/1982770/294239
-    for child in ax.get_children():
-        if isinstance(child, matplotlib.spines.Spine):
-            child.set_color(border_color)
-    # Next, change the color of the title, and axis+tick labels:
-    #
-    # This does not work to select the figure title:
-    # the_figure.gca().axes.title.set_color(axis_label_color)
-    if figure_title:
-        figure_title.set_color(axis_label_color)
-    ax.xaxis.get_label().set_color(axis_label_color)
-    for label in ax.xaxis.get_ticklabels():
-        label.set_color(axis_ticks_color)
-    ax.yaxis.get_label().set_color(axis_label_color)
-    for label in ax.yaxis.get_ticklabels():
-        label.set_color(axis_ticks_color)
-    return FigureCanvas(the_figure)
+    for ax in the_figure.get_axes():
+        # Changing the border of a matplotlib chart is clumsy, but here it
+        # is per http://stackoverflow.com/q/1982770/294239
+        for child in ax.get_children():
+            if isinstance(child, matplotlib.spines.Spine):
+                child.set_color(border_color)
+        # Next, change the color of the title, and axis+tick labels:
+        #
+        # This does not work to select the figure title:
+        # the_figure.gca().axes.title.set_color(axis_label_color)
+        #
+        #if figure_title:
+        #    figure_title.set_color(axis_label_color)
+        ax.xaxis.get_label().set_color(axis_label_color)
+        for label in ax.xaxis.get_ticklabels():
+            label.set_color(axis_ticks_color)
+        ax.yaxis.get_label().set_color(axis_label_color)
+        for label in ax.yaxis.get_ticklabels():
+            label.set_color(axis_ticks_color)
+    return
 
 
-def create_timeseries_png_str(data_dct, labels_dct=None, template=None):
+def create_chart_as_png_str(chart_type, data_dct,
+                            labels_dct=None, template=None):
+    assert chart_type in ('timeseries', 'barchart')
     assert isinstance(data_dct, dict) and 'data' in data_dct
-    assert len(data_dct['data'][0]) > 0
+    assert len(data_dct['data'][0]) > 0  # Should be a sequence.
     if labels_dct:
         assert isinstance(labels_dct, dict) and 'title' in labels_dct
-    # With arguments checked, create the matplotlib Figure instance:
-    figure = create_timeseries_figure(data_dct, labels_dct, template)
+    # With arguments checked, create the matplotlib Figure instance
+    # per chart_type:
+    if chart_type == 'timeseries':
+        figure_fn = create_timeseries_figure
+    elif chart_type == 'barchart':
+        figure_fn = create_barchart_figure
+    else:
+        raise Exception("Unknown chart_type %s" % chart_type)
+    figure = figure_fn(data_dct, labels_dct, template)
     # From here on, PNG-specific code happens.
     #
     # Note: there's no need to specify resolution/DPI for web-usage,
