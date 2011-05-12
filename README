@@ -1,0 +1,27 @@
+Overview
+============================================================
+
+The increasing need to display data charts and graphs via the web
+presents two major options in their generation: server-side, or
+client/browser-side.  
+
+The primary benefits of server-side chart generation is consistency
+across browsers, and re-use of the chart image, e.g. in generated PDF
+documents.  The primary benefit of client/browser-side chart
+generation is possible interactivity, and generally more dynamic
+behavior, e.g. immediately updated charts with a user's new input.
+
+This app, django-webplotlib, provides server-side chart generation in
+a convenient and modular fashion, relying on matplotlib for the actual
+generation.
+
+
+Installation
+------------
+
+Update your Django project's settings.py INSTALLED_APPS to include
+'webplotlib' and also update your project's urls.py file.
+
+
+Testing
+-------
