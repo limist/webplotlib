@@ -3,10 +3,11 @@
 import itertools
 from StringIO import StringIO
 
-import matplotlib  # Must be prior to pyplot import.
+import matplotlib
 matplotlib.use('Agg')
 from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 from matplotlib.figure import Figure
+import numpy as np
 
 
 # See http://matplotlib.sourceforge.net/users/customizing.html
@@ -14,8 +15,7 @@ font_params = {
     'sans-serif': [
         'Helvetica Neue', 'Arial', 'Liberation Sans',
         'FreeSans', 'sans-serif'],
-    'size': 13.0,
-    }
+    'size': 13.0, }
 matplotlib.rc('font', **font_params)
 
 
@@ -34,12 +34,16 @@ linestyles_default = itertools.cycle([
     ':'])  # dotted
 
 
-def create_timeseries_figure(ts_data_dct, labels_dct, template,
+def _create_timeseries_figure(ts_data_dct, labels_dct, template,
                              show_title=False, set_y_origin_zero=True):
     """
-    For a given sequence or dictionary of timeseries data, creates and
-    returns a Matplotlib Figure(Canvas) instance/visualization.  That
-    Figure can then be written to different formats, e.g. PNG or PDF.
+    For a given dictionary of timeseries data (key 'data' should have
+    sequence of 1+ sequences), creates and returns a Matplotlib
+    Figure(Canvas) plotting the timeseries.  That Figure can then be
+    written to different formats, e.g. PNG or PDF.
+
+    This was the original function that did most of the work; it's
+    since been refactored a bit to do styling separately.
     """
     # This function's organizing princple is to first express the
     # figure's content/data, then handle its presentation/styling.
@@ -82,12 +86,18 @@ def create_timeseries_figure(ts_data_dct, labels_dct, template,
     # ax.set_ylim(y_bottom, y_top)
     #
     # Set labels: title, x, y
-    figure_title = None
+    #
+    # NOTE: not going to use Figure title for now, instead, use HTML
+    # text for titling.
+    #
+    #figure_title = None
     if 'title' in labels_dct and show_title:
         # Note - it's not clear how to later select the title Text
         # instance after its construction via suptitle below, so setup
         # the reference here and use it later:
-        figure_title = the_figure.suptitle(labels_dct['title'])
+        #
+        # figure_title = the_figure.suptitle(labels_dct['title'])
+        the_figure.suptitle(labels_dct['title'])
     if 'x' in labels_dct:
         ax.set_xlabel(labels_dct['x'])
     else:
@@ -98,19 +108,84 @@ def create_timeseries_figure(ts_data_dct, labels_dct, template,
         ax.set_ylabel('Data')
     # With content of the figure settled, stylize it with mutator
     # function:
-    stylize_figure(the_figure)
+    _stylize_figure(the_figure)
     return FigureCanvas(the_figure)
 
 
-def stylize_figure(the_figure, style_template=None):
+def _create_barchart_figure(data_dct, labels_dct, template,
+                           show_title=False, set_y_origin_zero=True,
+                           x_zero_indexed=False):
+    """
+    Given 1+ sequences, create and return a Matplotlib Figure(Canvas)
+    barchart visualization.
+
+    This function parallels _create_timeseries_figure and was derived
+    from it.  While it may be possible to merge them into a single
+    more general function, there are enough differences to keep them
+    separate for now.
+    """
+    # CONTENT of figure:
+    assert isinstance(data_dct, dict), \
+           "Unknown type for data_dct: %s" % data_dct
+    series_data = data_dct['data']
+    assert all([len(this_data) > 0 for this_data in series_data])
+    series_names = data_dct.get('names')
+    if 'colors' in data_dct:
+        colors = itertools.cycle(data_dct['colors'])
+    else:
+        colors = colors_default
+    # With data unpacked, start building matplotlib Figure:
+    the_figure = Figure()
+    ax = the_figure.add_subplot(1, 1, 1)
+    plotted_data = []
+    bar_width = 0.7
+    for series in series_data:
+        x_indices = np.arange(1, len(series) + 1)
+        if x_zero_indexed:
+            x_indices = np.arange(len(series))
+        # Note that ax.bar() returns a single list - different from
+        # ax.plot() in timeseries chart.
+        this_series = ax.bar(
+            x_indices,
+            series,
+            bar_width,
+            color=colors.next(),
+            edgecolor='#AAAAAA',  # Softens appearance considerably.
+            #align='center',  # Causes bad spacing on chart's left.
+            )
+        plotted_data.append(this_series)
+    ax.set_xticks(x_indices + (bar_width / 2))
+    ax.set_xticklabels(x_indices)
+    # Set the legend?  Defer for now.
+    #
+    # Set labels: x, y
+    if 'x' in labels_dct:
+        ax.set_xlabel(labels_dct['x'])
+    else:
+        ax.set_xlabel('')
+    # Note: for y-axis labels, will incorporate formatter as shown
+    # here:
+    # http://matplotlib.sourceforge.net/examples/pylab_examples/custom_ticker1.html
+    if 'y' in labels_dct:
+        ax.set_ylabel(labels_dct['y'])
+    else:
+        ax.set_ylabel('Data')
+    # With content of the figure settled, stylize it with mutator
+    # function:
+    _stylize_figure(the_figure)
+    return FigureCanvas(the_figure)
+
+
+def _stylize_figure(the_figure, style_template=None):
     """
     A mutator that updates the appearance of the given Figure
     instance, per style_template.
+
+    This code was originally part of _create_timeseries_figure, but is
+    much better separate.
     """
-    # PRESENTATION of figure:
-    #
-    # The template parameter should/will set the overall styling of
-    # the chart, set below:
+    # Later, the template parameter will set the overall styling of
+    # the chart, including these parameters below:
     bgcolor = '#FFFFFF'
     border_color = '#CCCCCC'
     axis_label_color = '#555555'
@@ -141,17 +216,21 @@ def stylize_figure(the_figure, style_template=None):
 
 def create_chart_as_png_str(chart_type, data_dct,
                             labels_dct=None, template=None):
+    """
+    This is the public-facing API call to create and return a chart as
+    a PNG-format string.
+    """
     assert chart_type in ('timeseries', 'barchart')
     assert isinstance(data_dct, dict) and 'data' in data_dct
-    assert len(data_dct['data'][0]) > 0  # Should be a sequence.
+    assert len(data_dct['data'][0]) > 0  # At least one sequence given.
     if labels_dct:
         assert isinstance(labels_dct, dict) and 'title' in labels_dct
     # With arguments checked, create the matplotlib Figure instance
     # per chart_type:
     if chart_type == 'timeseries':
-        figure_fn = create_timeseries_figure
+        figure_fn = _create_timeseries_figure
     elif chart_type == 'barchart':
-        figure_fn = create_barchart_figure
+        figure_fn = _create_barchart_figure
     else:
         raise Exception("Unknown chart_type %s" % chart_type)
     figure = figure_fn(data_dct, labels_dct, template)
