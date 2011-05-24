@@ -81,6 +81,9 @@ def _create_timeseries_figure(ts_data_dct, labels_dct, template,
             'upper right', frameon=False)
     # The extents, title, and axis labels - set their text:
     #
+    # This attempt to set the y axis limits doesn't look good, just
+    # keep this as reference for any future attempts:
+    #
     # if set_y_origin_zero:  # and min(ts_data) >= 0:
     #     y_bottom = 0
     # y_top = max(ts_data) + 10
@@ -122,15 +125,15 @@ def _create_barchart_figure(data_dct, labels_dct, template,
 
     This function parallels _create_timeseries_figure and was derived
     from it.  While it may be possible to merge them into a single
-    more general function, there are enough differences to keep them
-    separate for now.
+    more general function, for now there are enough differences to
+    keep them separate.
     """
     # CONTENT of figure:
     assert isinstance(data_dct, dict), \
            "Unknown type for data_dct: %s" % data_dct
     series_data = data_dct['data']
     assert all([len(this_data) > 0 for this_data in series_data])
-    series_names = data_dct.get('names')
+    #series_names = data_dct.get('names')
     if 'colors' in data_dct:
         colors = itertools.cycle(data_dct['colors'])
     else:
@@ -180,7 +183,7 @@ def _create_barchart_figure(data_dct, labels_dct, template,
 def _stylize_figure(the_figure, style_template=None):
     """
     A mutator that updates the appearance of the given Figure
-    instance, per style_template.
+    instance, per style_template.  There is no return value.
 
     This code was originally part of _create_timeseries_figure, but is
     much better being separate.
