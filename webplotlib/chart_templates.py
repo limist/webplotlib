@@ -31,7 +31,8 @@ linestyles_default = itertools.cycle([
     '-',   # solid
     '--',  # dashed
     '-.',  # dash-dot
-    ':'])  # dotted
+    ':',   # dotted
+    ])
 
 
 def _create_timeseries_figure(ts_data_dct, labels_dct, template,
@@ -43,7 +44,7 @@ def _create_timeseries_figure(ts_data_dct, labels_dct, template,
     written to different formats, e.g. PNG or PDF.
 
     This was the original function that did most of the work; it's
-    since been refactored a bit to do styling separately.
+    since been refactored to do styling separately.
     """
     # This function's organizing princple is to first express the
     # figure's content/data, then handle its presentation/styling.
@@ -182,7 +183,7 @@ def _stylize_figure(the_figure, style_template=None):
     instance, per style_template.
 
     This code was originally part of _create_timeseries_figure, but is
-    much better separate.
+    much better being separate.
     """
     # Later, the template parameter will set the overall styling of
     # the chart, including these parameters below:
