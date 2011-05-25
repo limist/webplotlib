@@ -10,8 +10,8 @@ client/browser-side.
   images), and re-use of the chart image outside the browser, e.g. in
   generating PDF documents.
 
-- The primary benefit of client/browser-side chart generation are:
-  interactivity (if needed) and generally more dynamic behavior,
+- The primary benefit of client/browser-side chart generation is:
+  interactivity (if needed), or generally more dynamic behavior,
   e.g. immediately updated charts with a user's new input.
 
 webplotlib could be for you if you want Python server-side chart
@@ -27,29 +27,30 @@ easily be used without/outside Django.  See below for more details.
 
 webplotlib has these direct dependencies:
 
-1. Matplotlib - you can get this via your OS packaging system, or
-   install from source.  I prefer to install version 1.0.1 from
-   source.  You can install this globally (e.g. sudo pip install
-   numpy) or locally to one virtualenv (pip install numpy).
-   Matplotlib has numerous system dependencies, e.g. on Ubuntu,
-   install packages: python, python-dev, libpng12-dev,
+1. Numpy, which Matplotlib also depends on.  You can install this
+   globally (e.g. sudo pip install numpy) or just for the relevant
+   virtualenv.  For its full functionality you'll want to install
+   system dependencies (like Fortran), e.g. on Ubuntu, the packages
+   libatlas-base-dev, gfortran, gcc, g++.
+2. Matplotlib - you can get this via your OS packaging system (likely
+   too old), from PyPI, or from source; now that 1.0.1 is on PyPI,
+   installing with pip is easiest.  You can also install this globally
+   or locally to one virtualenv.  Note that Matplotlib has numerous
+   system dependencies depending on usage: e.g. for server usage on
+   Ubuntu, install packages: python, python-dev, libpng12-dev,
    libfreetype6-dev.
-2. Numpy, which you'll need for Matplotlib too.  You can also install
-   this globally or for the virtualenv (pip install numpy).  For its
-   full functionality you may want to install system dependencies,
-   e.g. on Ubuntu, the packages libatlas-base-dev, gfortran, gcc, g++
-   packages.
 3. py.test, if you want to run the unit tests.
 
 
-With dependencies installed, install webplotlib from PyPI with:
+With dependencies installed (and within the relevant virtualenv),
+install webplotlib from PyPI with:
 
 ::
 
     pip install webplotlib
 
-Or you can install from source (presumably you're already in a
-virtualenv) via github.
+
+Or you can install from source via github.
 
 
 Usage
@@ -57,7 +58,8 @@ Usage
 
 While I wrote webplotlib to work with a Django project, currently
 there are no direct dependencies on Django, so you can treat
-webplotlib like any other Python package and call it directly with,
+webplotlib like any other Python package and call it directly. For
+example:
 
 ::
 
