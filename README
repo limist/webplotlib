@@ -110,6 +110,8 @@ Testing
 Basic unit tests can be run using Tox_ or py.test.  
 
 
+.. _Tox: http://codespeak.net/tox/
+
 
 History + Design
 ----------------
