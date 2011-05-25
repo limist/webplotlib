@@ -26,6 +26,7 @@ NOTE: Even though I wrote this package for a Django context, it can
 easily be used without/outside Django.  See below for more details.
 
 webplotlib has these direct dependencies:
+
 1. Matplotlib - you can get this via your OS packaging system, or
    install from source.  I prefer to install version 1.0.1 from
    source.  You can install this globally (e.g. sudo pip install
