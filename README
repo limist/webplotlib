@@ -1,27 +1,155 @@
 Overview
 ============================================================
 
-The increasing need to display data charts and graphs via the web
-presents two major options in their generation: server-side, or
-client/browser-side.  
+As a developer, the need to display data charts and graphs on your web
+site/service presents two major generation options: server-side, or
+client/browser-side.
 
-The primary benefits of server-side chart generation is consistency
-across browsers, and re-use of the chart image, e.g. in generated PDF
-documents.  The primary benefit of client/browser-side chart
-generation is possible interactivity, and generally more dynamic
-behavior, e.g. immediately updated charts with a user's new input.
+- The primary benefits of server-side chart generation are: completely
+  consistent display across browsers (even IE can handle showing
+  images), and re-use of the chart image outside the browser, e.g. in
+  generating PDF documents.
 
-This app, django-webplotlib, provides server-side chart generation in
-a convenient and modular fashion, relying on matplotlib for the actual
-generation.
+- The primary benefit of client/browser-side chart generation are:
+  interactivity (if needed) and generally more dynamic behavior,
+  e.g. immediately updated charts with a user's new input.
+
+webplotlib could be for you if you want Python server-side chart
+generation, providing a convenient and modular package/API.  It is GPL
+licensed.
 
 
 Installation
 ------------
 
-Update your Django project's settings.py INSTALLED_APPS to include
-'webplotlib' and also update your project's urls.py file.
+NOTE: Even though I wrote this package for a Django context, it can
+easily be used without/outside Django.  See below for more details.
+
+webplotlib has these direct dependencies:
+1. Matplotlib - you can get this via your OS packaging system, or
+   install from source.  I prefer to install version 1.0.1 from
+   source.  You can install this globally (e.g. sudo pip install
+   numpy) or locally to one virtualenv (pip install numpy).
+   Matplotlib has numerous system dependencies, e.g. on Ubuntu,
+   install packages: python, python-dev, libpng12-dev,
+   libfreetype6-dev.
+2. Numpy, which you'll need for Matplotlib too.  You can also install
+   this globally or for the virtualenv (pip install numpy).  For its
+   full functionality you may want to install system dependencies,
+   e.g. on Ubuntu, the packages libatlas-base-dev, gfortran, gcc, g++
+   packages.
+3. py.test, if you want to run the unit tests.
+
+
+With dependencies installed, install webplotlib from PyPI with:
+
+::
+
+    pip install webplotlib
+
+Or you can install from source (presumably you're already in a
+virtualenv) via github.
+
+
+Usage
+-----
+
+While I wrote webplotlib to work with a Django project, currently
+there are no direct dependencies on Django, so you can treat
+webplotlib like any other Python package and call it directly with,
+
+::
+
+    from webplotlib.chart_builders import create_chart_as_png_str
+    
+    
+    # When you have at least one sequence (list, tuple, iterable) 
+    # of data, you can plot it:
+    chart_png_str = create_chart_as_png_str(
+        'timeseries',
+        {'data': [[your_data_sequence]], 'names': 'MyDataLine'},
+        labels_dct={'title': 'TheBigBoard', 'x': 'Data', 'y': 'Value'})
+    # Save chart_png_str, etc.
+        
+
+More examples of usage can be found in the test_chart_builders.py
+module.
+
+Django integration: I found confusing and inconsistent examples of
+integrating Matplotlib with Django on the web, so experimented a bit
+on my own.  You can see some examples in webplotlib's views.py file
+which shows how to serve/return server-side generated PNG charts
+directly as a string - which can be handy for rapid feedback when you
+want to style a chart.
+
+So to use webplotlib in Django, update your Django project's
+settings.py INSTALLED_APPS to include 'webplotlib' and also update
+your project's urls.py file (there's nothing in models.py yet) to have
+something like,
+
+::
+
+    urlpatterns = patterns('',
+        ...
+        (r'^wpl/', include('webplotlib.urls')),
+        ...
+        )
+
+
+Also, consider using webplotlib with my app django-metaimage_, which
+readily handles creating new images and saving them to a useful Django
+ORM model instance/representation.
+
+
+.. _django-metaimage: https://github.com/limist/django-metaimage
 
 
 Testing
 -------
+
+Basic unit tests can be run using Tox_ or py.test.  
+
+
+
+History + Design
+----------------
+
+webplotlib relies on Matplotlib_ - the most powerful and popular
+Python charting package available - for the actual chart generation.
+But what I found (as of Spring 2011) was a lack of well-abstracted
+examples of Matplotlib usage in web environments, as well as a lack of
+examples using its non-interactive, object-oriented, programmer's
+interface (by contrast, there are tons of examples_ for interactive
+user-driven chart creation, emulating MATLAB).  Thus the need to write
+a new app that could quickly be used to generate server-side charts.
+
+I wanted a way to generate a Matplotlib chart (time-series and bar
+charts initially) with a single function call that would create and
+return the raw chart data/image as a string - from there it's easy to
+save it, or process it further (e.g. add watermark), or return it via
+HTTP, etc.  After studying lots of online examples and documentation,
+experimenting, and refactoring, enter webplotlib.  Initially it
+supports time-series and bar charts, taking sequences and returning
+non-ugly charts as PNG-image strings you can readily use.  There will
+be more abstractions (e.g. defining chart templates separately) and
+improvements to come, but this version is usable now.
+
+Alternatives: Why not use a Flash library? Not OSS, same limitations
+as Javascript library.  And why not use a Javascript library?  After
+looking at a bunch of client-side libraries (Grafico, Highcharts,
+flot, Google Chart Tools, dygraphs, Raphaël), I thought Protovis_ was
+it - the one tool to rule them all.  But after making sense of their
+docs and examples, I found displays were inconsistent: simple charts
+would look fine in Firefox 3/4 but show up in Chrome without tick
+marks and labels, which was unacceptable.  And I didn't even bother
+looking at IE rendering, where more pain was likely.  Furthermore, my
+requirements changed; I needed to use the charts in reporting, so it
+was essential to have the charts as images, consistent across several
+mediums.  So server-side generation was the way to go, and with
+Python, one finds out very quickly there's no serious competition to
+Matplotlib.
+
+
+.. _examples: http://matplotlib.sourceforge.net/gallery.html
+.. _Matplotlib: http://matplotlib.sourceforge.net/index.html
+.. _Protovis: http://vis.stanford.edu/protovis/
