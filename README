@@ -33,13 +33,19 @@ webplotlib has these direct dependencies:
    system dependencies (like Fortran), e.g. on Ubuntu, the packages
    libatlas-base-dev, gfortran, gcc, g++.
 2. Matplotlib - you can get this via your OS packaging system (likely
-   too old), from PyPI, or from source; now that 1.0.1 is on PyPI,
-   installing with pip is easiest.  You can also install this globally
-   or locally to one virtualenv.  Note that Matplotlib has numerous
-   system dependencies depending on usage: e.g. for server usage on
-   Ubuntu, install packages: python, python-dev, libpng12-dev,
-   libfreetype6-dev.
+   too old), from PyPI, or from source.  The latest version, 1.0.1, is
+   ostensibly on PyPI, but pip pulls down the wrong version currently
+   (as of May 2011; not pip's fault, see this `SO discussion`_),
+   unless you do the following:
+   pip install -f http://downloads.sourceforge.net/project/matplotlib/matplotlib/matplotlib-1.0.1/matplotlib-1.0.1.tar.gz matplotlib
+   You can also install this globally or locally to one virtualenv.
+   Note that Matplotlib has numerous system dependencies depending on
+   usage: e.g. for server usage on Ubuntu, install packages: python,
+   python-dev, libpng12-dev, libfreetype6-dev.
 3. py.test, if you want to run the unit tests.
+
+
+.. _SO discussion: http://stackoverflow.com/questions/3555551/why-does-pip-install-matplotlib-version-0-91-1-when-pypi-shows-version-1-0-0
 
 
 With dependencies installed (and within the relevant virtualenv),
