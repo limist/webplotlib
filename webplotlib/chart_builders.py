@@ -228,8 +228,8 @@ def create_chart_as_png_str(chart_type, data_dct,
     assert isinstance(data_dct, dict) and 'data' in data_dct
     assert len(data_dct['data'][0]) > 0  # At least one sequence given.
     if labels_dct:
-        assert isinstance(labels_dct, dict)
-        assert 'title' in labels_dct
+        assert isinstance(labels_dct, dict), 'labels_dict is not a dict'
+        assert 'title' in labels_dct, '\'title\' is not in labels_dict'
     # With arguments checked, create the matplotlib Figure instance
     # per chart_type:
     if chart_type == 'timeseries':
